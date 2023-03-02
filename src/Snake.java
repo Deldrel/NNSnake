@@ -4,11 +4,11 @@ import java.util.Random;
 public class Snake {
     final int X, Y, WIDTH, HEIGHT, gridSize;
     int x, y, snakeSize, appleX, appleY, timeAlive = 0;
-    int [][]grid;
+    int[][] grid;
     boolean state = true;
     Random random;
     Color minColor = new Color(0, 30, 0, 0);
-    int inputSize = 9;
+    int inputSize;
 
     NeuralNetwork brain;
 
@@ -24,6 +24,7 @@ public class Snake {
         x = gridSize / 2;
         y = gridSize / 2;
 
+        inputSize = 28;
         brain = new NeuralNetwork(0, 0, _screen_width / 2, HEIGHT, new int[]{inputSize, 4});
 
         newApple();
@@ -104,53 +105,70 @@ public class Snake {
 
     public void update() {
         if (state) {
-            float[] inputs = new float[inputSize];
-            inputs[0] = Util.map(x, 0, gridSize, 0, 1);
-            inputs[1] = Util.map(y, 0, gridSize, 0, 1);
-            inputs[2] = Util.map(appleX - x, 0, gridSize, 0, 1);
-            inputs[3] = Util.map(appleY - y, 0, gridSize, 0, 1);
-            inputs[4] = Util.map(snakeSize, 0, gridSize * gridSize, 0, 1);
-            inputs[5] = Util.map(gridSize - x, 0, gridSize, 0, 1);
-            inputs[6] = Util.map(gridSize - y, 0, gridSize, 0, 1);
-            inputs[7] = Util.map(appleX, 0, gridSize, 0, 1);
-            inputs[8] = Util.map(appleY, 0, gridSize, 0, 1);
-            brain.feedForward(inputs);
+            brain.feedForward(getInputs());
             move(brain.getHighestOutput());
             timeAlive++;
         }
     }
 
+    public float[] getInputs() {
+        float[] inputs = new float[inputSize];
+
+        int index = 0;
+        for (int i = -2; i <= 2; i++) {
+            for (int j = -2; j <= 2; j++) {
+                if (i == 0 && j == 0) continue;
+                if (x + i < 0 || x + i >= gridSize || y + j < 0 || y + j >= gridSize) {
+                    inputs[index] = 1;
+                } else {
+                    inputs[index] = grid[x + i][y + j] > 0 ? 1 : 0;
+                }
+                index++;
+            }
+        }
+        inputs[index] = appleX > x ? 1 : 0;
+        index++;
+        inputs[index] = appleX < x ? 1 : 0;
+        index++;
+        inputs[index] = appleY > y ? 1 : 0;
+        index++;
+        inputs[index] = appleY < y ? 1 : 0;
+
+
+        return inputs;
+    }
+
     public void mutate(float mutationRate) {
-    	brain.mutate(mutationRate);
+        brain.mutate(mutationRate);
     }
 
     public void reset() {
-    	grid = new int[gridSize][gridSize];
-    	snakeSize = 3;
+        grid = new int[gridSize][gridSize];
+        snakeSize = 8;
         x = gridSize / 2;
         y = gridSize / 2;
-    	timeAlive = 0;
-    	state = true;
-    	newApple();
+        timeAlive = 0;
+        state = true;
+        newApple();
     }
 
     //getter snakeSize
     public int getSnakeSize() {
-    	return snakeSize;
+        return snakeSize;
     }
 
     //getter timeAlive
     public int getTimeAlive() {
-    	return timeAlive;
+        return timeAlive;
     }
 
     //setter brain
     public void setBrain(NeuralNetwork _brain) {
-    	brain = _brain;
+        brain = _brain;
     }
 
     //getter brain
     public NeuralNetwork getBrain() {
-    	return brain;
+        return brain;
     }
 }

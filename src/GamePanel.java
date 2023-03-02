@@ -47,14 +47,14 @@ public class GamePanel extends JPanel implements ActionListener {
                 return;
             }
         }
+        snakes[0].draw(g, true);
         nextGen();
     }
 
     public void nextGen() {
         int score = 0, bestScore = 0, bestIndex = 0;
         for (int i = 0; i < populationSize; i++) {
-            score = snakes[i].getTimeAlive() + snakes[i].getSnakeSize() * 10;
-            bestScore = 0;
+            score = (snakes[i].getSnakeSize() - 3) * snakes[i].getTimeAlive();
             if (score > bestScore) {
                 bestScore = score;
                 bestIndex = i;
@@ -62,12 +62,14 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         for (int i = 0; i < populationSize; i++) {
-            snakes[i].setBrain(snakes[bestIndex].getBrain());
-            snakes[i].mutate((float) 1 / populationSize);
-            snakes[i].reset();
+            if (i != bestIndex) {
+                snakes[i].setBrain(snakes[bestIndex].getBrain());
+                snakes[i].mutate(1f / populationSize);
+                snakes[i].reset();
+            }
         }
 
-        max_moves = 100 + 5 * generation;
+        max_moves = 100 + generation / 100 * 10;
         generation++;
         Util.print("Generation: " + generation + " Best Score: " + bestScore + " Max Moves: " + max_moves);
     }

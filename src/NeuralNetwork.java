@@ -34,31 +34,6 @@ public class NeuralNetwork {
         }
     }
 
-    public void train(float[] inputs, float[] targets, float learningRate) {
-        feedForward(inputs);
-        float[][] errors = new float[neurons.length][];
-        for (int i = 0; i < errors.length; i++) {
-            errors[i] = new float[neurons[i].length];
-        }
-        for (int i = 0; i < neurons[neurons.length - 1].length; i++) {
-            errors[neurons.length - 1][i] = (targets[i] - neurons[neurons.length - 1][i]) * neurons[neurons.length - 1][i] * (1 - neurons[neurons.length - 1][i]);
-        }
-        for (int i = neurons.length - 2; i > 0; i--) {
-            for (int j = 0; j < neurons[i].length; j++) {
-                float error = 0;
-                for (int k = 0; k < neurons[i + 1].length; k++) {
-                    error += errors[i + 1][k] * weights[i][j * neurons[i + 1].length + k];
-                }
-                errors[i][j] = error * neurons[i][j] * (1 - neurons[i][j]);
-            }
-        }
-        for (int i = 0; i < weights.length; i++) {
-            for (int j = 0; j < weights[i].length; j++) {
-                weights[i][j] += learningRate * neurons[i][j / neurons[i + 1].length] * errors[i + 1][j % neurons[i + 1].length];
-            }
-        }
-    }
-
     public void init(int[] layers) {
         neurons = new float[layers.length][];
         neuronSize = new int[layers.length];
@@ -107,14 +82,6 @@ public class NeuralNetwork {
                 g.fillOval(x[i][j] - neuronSize[i] / 2, y[i][j] - neuronSize[i] / 2, neuronSize[i], neuronSize[i]);
             }
         }
-
-        //write neuron value in neurons
-        for (int i = 0; i < x.length; i++) {
-            for (int j = 0; j < y[i].length; j++) {
-                g.setColor(Color.BLACK);
-                g.drawString(String.format("%.2f", neurons[i][j]), x[i][j] - neuronSize[i] / 2, y[i][j] - neuronSize[i] / 2);
-            }
-        }
     }
 
     public int getHighestOutput() {
@@ -133,7 +100,7 @@ public class NeuralNetwork {
         for (int i = 0; i < weights.length; i++) {
             for (int j = 0; j < weights[i].length; j++) {
                 if (Util.random(0, 1) < rate) {
-                    weights[i][j] += Util.random(-1, 1) / 10;
+                    weights[i][j] += Util.random(-1, 1);
                     weights[i][j] = Util.constraint(weights[i][j], -1, 1);
                 }
             }
